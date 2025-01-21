@@ -1,2 +1,2 @@
-# Speaker_Identification_Compal
+# Speaker_Identification
 Speaker_Identification_Compal
