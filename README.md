@@ -32,11 +32,7 @@ Obtain a token from [Hugging Face](https://huggingface.co/settings/tokens) and i
 ## **Folder Structure**
 Below is the required folder structure:
 
-
-speech_data/ │ ├── input/ │ ├── multiple_people_wav/ # Multi-speaker input audio files │ └── individual_wav/ # Known speakers' audio samples │ ├── results/ │ ├── speaker_diarization_txt/ # Diarization output in text format │ ├── segments/ # Timeline plots and RTTM files │ └── individual_remove_background_noise_wav/ # Speaker-specific audio files
-
-
----
+ 
 
 ## **Usage**
 
@@ -47,4 +43,4 @@ speech_data/ │ ├── input/ │ ├── multiple_people_wav/ # Multi-spe
 ### **2. Run the Script**
 Execute the script:
 ```bash
-python main.py
+python pyannote-audio.py
