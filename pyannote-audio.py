@@ -10,9 +10,15 @@ import os
 import numpy as np
 import librosa
 import soundfile as sf 
+from pathlib import Path
 
-input_multiple_people = r"speech_data\\input\\multiple_people_wav\\Trump_Fridman.wav"
+# 檔案路徑設定
+# 輸入1:多人會議檔案
 input_multiple_people = r"speech_data\\input\\multiple_people_wav\\Trump_Fridman_2m.wav"
+# 輸入2:各別人聲音檔資料夾，會依序讀入，以檔名為人名，例如: David.wav,John.wav,etc.
+input_individual = r"speech_data\input\individual_wav"
+# 個別人聲相似度 threshold  
+threshold = 0.8
 
 def list_files_with_full_path(directory_path):
     try:
@@ -60,31 +66,29 @@ classifier = classifier.to(device)
 diarization = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1", use_auth_token="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")
 
 segments = diarization(input_multiple_people) 
+# 輸出3:不同語者分段標記(只能辨識有幾位，但不知道是誰講話)
 with open("speech_data\\results\\segments\\segments_"+timestamp+".rttm", "w") as file:
     segments.write_rttm(file)
 
 print("Segments saved to 'segments.rttm'")
 
 # Call the function to save the wider segments plot
+# 輸出2:不同語者分段標記圖(只能辨識有幾位，但不知道是誰講話)
 plot_and_save_segments_wide(segments, r"speech_data\\results\\segments\\segments_wide_"+timestamp+".png")
 
 known_speakers = []
 known_speaker_ids = []
-# 示例使用
-directory = "speech_data\input\individual_wav"  # 替換為目標資料夾路徑
-file_path = list_files_with_full_path(directory)
-for path in file_path:
-    print(path)
-    file_name = os.path.splitext(os.path.basename(path))[0]
-    print(file_name)
+
+file_path = list_files_with_full_path(input_individual)
+for path in file_path: 
+    file_name = os.path.splitext(os.path.basename(path))[0] 
     waveform, sample_rate = torchaudio.load(path )
     waveform = waveform.to(device)
     embedding = classifier.encode_batch(waveform)
     known_speakers.append(embedding.squeeze(1).cpu().numpy())   
     known_speaker_ids.append(file_name)
 
-# Set a threshold for similarity scores to determine when a match is considered successful
-threshold = 0.8
+
 
 speaker_audio = {} 
 signal, sr = librosa.load(input_multiple_people, sr=None)
@@ -92,6 +96,8 @@ signal, sr = librosa.load(input_multiple_people, sr=None)
 # 将 librosa 加载的音频保存为临时 WAV 文件（因为 pyannote 需要音频文件输入）
 temp_wav_path = "temp.wav"
 sf.write(temp_wav_path, signal, sr)
+
+# 輸出1:不同語者分段標記(只能辨識有幾位，但不知道是誰講話)
 speaker_diarization_output_file = r"speech_data\results\speaker_diarization_txt\speaker_diarization_output_"+timestamp+".txt"
 with open(speaker_diarization_output_file, 'w', encoding='utf-8') as file:
     # Iterate through each segment identified in the diarization process
@@ -137,38 +143,3 @@ for speaker, audio_clips in speaker_audio.items():
     output_path = f"speech_data\\results\\individual_remove_background_noise_wav\\speaker_{speaker}_"+timestamp+".wav"
     sf.write(output_path, combined_audio, sr)
     print(f"已保存话者 {speaker} 的音频到 {output_path}")
-##########################ˇ
-
-
-"""
-signal, sr = librosa.load(input_multiple_people, sr=None)
-
-# 将 librosa 加载的音频保存为临时 WAV 文件（因为 pyannote 需要音频文件输入）
-temp_wav_path = "temp.wav"
-sf.write(temp_wav_path, signal, sr)
-
-# 使用 pyannote 处理音频，进行话者分离
-#segments = diarization(temp_wav_path)
- 
-# 可选：将不同话者的音频分离并保存
-speaker_audio = {}  # 用于存储每个话者的音频数据
-  
-for segment, _, speaker in segments.itertracks(yield_label=True):
-    print(f"Speaker {speaker}: start={segment.start:.1f}s, end={segment.end:.1f}s")
-    start = int(segment.start * sr)
-    end = int(segment.end * sr)
-    
-    # 截取对应话者的音频片段
-    if speaker not in speaker_audio:
-        speaker_audio[speaker] = []
-    speaker_audio[speaker].append(signal[start:end])
-for speaker, audio_clips in speaker_audio.items():
-    #combined_audio = librosa.util.fix_length(sum(audio_clips), len(signal))  # 合并音频片段
-    combined_audio = np.concatenate(audio_clips)
-
-    # 如果需要对齐到原始信号长度，可以使用 librosa.util.fix_length
-    #combined_audio = librosa.util.fix_length(combined_audio, len(signal))
-    output_path = f"speaker_{speaker}.wav"
-    sf.write(output_path, combined_audio, sr)
-    print(f"已保存话者 {speaker} 的音频到 {output_path}")
-"""
