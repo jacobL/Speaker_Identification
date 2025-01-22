@@ -1,19 +1,20 @@
 # Speaker Diarization and Recognition Pipeline
 
 ## **Overview**
-This pipeline performs:
-1. **Speaker Diarization**: Identifying segments of speech from different speakers in a multi-speaker audio file.
-2. **Speaker Recognition**: Matching diarized segments with known speakers using pre-recorded audio samples.
+This repository provides a Python-based pipeline for speaker diarization and identification. The tool leverages state-of-the-art pre-trained models for speaker embedding extraction and diarization, enabling accurate segmentation and recognition of speakers in audio recordings.
 
 ---
 
 ## **Features**
-- Segment multi-speaker audio into speaker-specific timestamps.
-- Visualize speaker diarization results as a timeline plot.
-- Match diarized segments with known speakers based on voice embeddings.
-- Save speaker-specific audio segments as separate WAV files.
+- Speaker Diarization: Automatically segments audio files into speaker-specific segments.
 
----
+- Speaker Identification: Matches unknown speakers in the audio file with a set of pre-recorded voices.
+
+- Custom Thresholds: Configurable similarity threshold for speaker matching.
+
+- Visualization: Generates visual annotations of speaker segments.
+
+- Noise Reduction: Outputs cleaner individual speaker audio clips. 
 
 ## **Setup and Installation**
 
